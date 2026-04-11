@@ -1,0 +1,277 @@
+<svg viewBox="0 0 1200 850" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#060D1F"/>
+      <stop offset="100%" style="stop-color:#0D1B35"/>
+    </linearGradient>
+    <!-- Dark blue quadrant fill -->
+    <linearGradient id="darkBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D3B66"/>
+      <stop offset="100%" style="stop-color:#0A2E52"/>
+    </linearGradient>
+    <!-- Light blue quadrant fill -->
+    <linearGradient id="lightBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E4D8A"/>
+      <stop offset="100%" style="stop-color:#0C3D70"/>
+    </linearGradient>
+    <!-- Center circle gradient -->
+    <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1A3A5C"/>
+      <stop offset="100%" style="stop-color:#0D1F3A"/>
+    </radialGradient>
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Subtle glow for text -->
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Arrow marker gold -->
+    <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#FFB000"/>
+    </marker>
+    <!-- Arrow marker cyan -->
+    <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00BFFF"/>
+    </marker>
+  </defs>
+
+  <!-- ═══ BACKGROUND ═══ -->
+  <rect width="1200" height="850" fill="url(#bgGrad)"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="600" y1="0" x2="600" y2="850" stroke="#1A2E50" stroke-width="1" opacity="0.4"/>
+  <line x1="0" y1="425" x2="1200" y2="425" stroke="#1A2E50" stroke-width="1" opacity="0.4"/>
+
+  <!-- ═══ HEADER ═══ -->
+  <!-- Gold accent bar -->
+  <rect x="0" y="0" width="1200" height="5" fill="#FFB000"/>
+
+  <!-- Title -->
+  <text x="600" y="45" font-size="32" font-weight="bold" text-anchor="middle" fill="#FFB000" letter-spacing="6" filter="url(#textGlow)">OODA LOOP ANALYSIS</text>
+  <text x="600" y="68" font-size="14" text-anchor="middle" fill="#00BFFF" letter-spacing="2">FinVeritas — Explainable Financial Analysis System</text>
+  <!-- Subtitle divider -->
+  <line x1="380" y1="78" x2="820" y2="78" stroke="#FFB000" stroke-width="1" opacity="0.5"/>
+
+  <!-- ═══ QUADRANT BOXES ═══ -->
+
+  <!-- ── OBSERVE (Top-Left, Dark Blue) ── -->
+  <rect x="30" y="95" width="400" height="310" rx="6" fill="url(#darkBlue)" stroke="#00BFFF" stroke-width="1.5" opacity="0.95"/>
+  <!-- Header accent -->
+  <rect x="30" y="95" width="400" height="50" rx="6" fill="#0D3B66"/>
+  <rect x="30" y="120" width="400" height="25" fill="#0D3B66"/>
+  <!-- Section label badge -->
+  <rect x="44" y="105" width="110" height="28" rx="14" fill="#FFB000"/>
+  <text x="99" y="124" font-size="13" font-weight="bold" text-anchor="middle" fill="#0D1B35" letter-spacing="1">OBSERVE</text>
+  <!-- Corner marker -->
+  <circle cx="410" cy="119" r="8" fill="none" stroke="#FFB000" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="410" cy="119" r="3" fill="#FFB000" opacity="0.7"/>
+
+  <!-- Subtitle -->
+  <text x="50" y="166" font-size="12" fill="#00BFFF" font-style="italic">What data are we gathering?</text>
+  <line x1="44" y1="174" x2="416" y2="174" stroke="#FFB000" stroke-width="0.8" opacity="0.4"/>
+
+  <!-- Bullet points -->
+  <circle cx="56" cy="196" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="201" font-size="13" fill="#D8E8F8">Gathering multi-source financial data</text>
+  <text x="68" y="217" font-size="12" fill="#9AB8D4">(PDFs, tickers, CSV)</text>
+
+  <circle cx="56" cy="237" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="242" font-size="13" fill="#D8E8F8">3 ingestion pipelines actively</text>
+  <text x="68" y="258" font-size="12" fill="#9AB8D4">collecting information</text>
+
+  <circle cx="56" cy="278" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="283" font-size="13" fill="#D8E8F8">Data credibility scoring on every load</text>
+
+  <circle cx="56" cy="305" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="310" font-size="13" fill="#D8E8F8">Real-time API feeds + batch processing</text>
+
+  <!-- Status badge -->
+  <rect x="44" y="365" width="160" height="24" rx="12" fill="#FFB000" fill-opacity="0.15" stroke="#FFB000" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="124" y="381" font-size="11" text-anchor="middle" fill="#FFB000">⚡ Real-time + batch cycle</text>
+
+  <!-- ── ORIENT (Top-Right, Light Blue) ── -->
+  <rect x="770" y="95" width="400" height="310" rx="6" fill="url(#lightBlue)" stroke="#00BFFF" stroke-width="1.5" opacity="0.95"/>
+  <rect x="770" y="95" width="400" height="50" rx="6" fill="#0E4D8A"/>
+  <rect x="770" y="120" width="400" height="25" fill="#0E4D8A"/>
+  <rect x="1046" y="105" width="110" height="28" rx="14" fill="#00BFFF"/>
+  <text x="1101" y="124" font-size="13" font-weight="bold" text-anchor="middle" fill="#0D1B35" letter-spacing="1">ORIENT</text>
+  <circle cx="790" cy="119" r="8" fill="none" stroke="#00BFFF" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="790" cy="119" r="3" fill="#00BFFF" opacity="0.7"/>
+
+  <text x="784" y="166" font-size="12" fill="#00BFFF" font-style="italic">How do we interpret the problem?</text>
+  <line x1="784" y1="174" x2="1156" y2="174" stroke="#00BFFF" stroke-width="0.8" opacity="0.4"/>
+
+  <circle cx="796" cy="196" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="201" font-size="13" fill="#D8E8F8">"Financial truth, quantified" philosophy</text>
+
+  <circle cx="796" cy="226" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="231" font-size="13" fill="#D8E8F8">Deterministic math in Python (not LLM)</text>
+
+  <circle cx="796" cy="258" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="263" font-size="13" fill="#D8E8F8">All computations lock financial logic</text>
+  <text x="808" y="279" font-size="12" fill="#9AB8D4">in code</text>
+
+  <circle cx="796" cy="299" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="304" font-size="13" fill="#D8E8F8">Data before narrative framework</text>
+
+  <rect x="784" y="365" width="160" height="24" rx="12" fill="#00BFFF" fill-opacity="0.15" stroke="#00BFFF" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="864" y="381" font-size="11" text-anchor="middle" fill="#00BFFF">✅ Clear framework locked</text>
+
+  <!-- ── DECIDE (Bottom-Left, Dark Blue) ── -->
+  <rect x="30" y="445" width="400" height="310" rx="6" fill="url(#darkBlue)" stroke="#00BFFF" stroke-width="1.5" opacity="0.95"/>
+  <rect x="30" y="445" width="400" height="50" rx="6" fill="#0D3B66"/>
+  <rect x="30" y="470" width="400" height="25" fill="#0D3B66"/>
+  <rect x="44" y="455" width="110" height="28" rx="14" fill="#FFB000"/>
+  <text x="99" y="474" font-size="13" font-weight="bold" text-anchor="middle" fill="#0D1B35" letter-spacing="1">DECIDE</text>
+  <circle cx="410" cy="469" r="8" fill="none" stroke="#FFB000" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="410" cy="469" r="3" fill="#FFB000" opacity="0.7"/>
+
+  <text x="50" y="516" font-size="12" fill="#00BFFF" font-style="italic">What strategic decisions emerge?</text>
+  <line x1="44" y1="524" x2="416" y2="524" stroke="#FFB000" stroke-width="0.8" opacity="0.4"/>
+
+  <circle cx="56" cy="546" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="551" font-size="13" fill="#D8E8F8">Architecture locked: determinism</text>
+  <text x="68" y="567" font-size="12" fill="#9AB8D4">over inference</text>
+
+  <circle cx="56" cy="587" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="592" font-size="13" fill="#D8E8F8">Multi-source ingestion with graceful</text>
+  <text x="68" y="608" font-size="12" fill="#9AB8D4">degradation</text>
+
+  <circle cx="56" cy="628" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="633" font-size="13" fill="#D8E8F8">Security-first: MongoDB + JWT + OTP auth</text>
+
+  <circle cx="56" cy="658" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="68" y="663" font-size="13" fill="#D8E8F8">Guardrails prevent LLM hallucination</text>
+
+  <rect x="44" y="714" width="170" height="24" rx="12" fill="#FFB000" fill-opacity="0.15" stroke="#FFB000" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="129" y="730" font-size="11" text-anchor="middle" fill="#FFB000">🔒 Committed architecture</text>
+
+  <!-- ── ACT (Bottom-Right, Light Blue) ── -->
+  <rect x="770" y="445" width="400" height="310" rx="6" fill="url(#lightBlue)" stroke="#00BFFF" stroke-width="1.5" opacity="0.95"/>
+  <rect x="770" y="445" width="400" height="50" rx="6" fill="#0E4D8A"/>
+  <rect x="770" y="470" width="400" height="25" fill="#0E4D8A"/>
+  <rect x="1060" y="455" width="96" height="28" rx="14" fill="#00BFFF"/>
+  <text x="1108" y="474" font-size="13" font-weight="bold" text-anchor="middle" fill="#0D1B35" letter-spacing="1">ACT</text>
+  <circle cx="790" cy="469" r="8" fill="none" stroke="#00BFFF" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="790" cy="469" r="3" fill="#00BFFF" opacity="0.7"/>
+
+  <text x="784" y="516" font-size="12" fill="#00BFFF" font-style="italic">What actions have we taken?</text>
+  <line x1="784" y1="524" x2="1156" y2="524" stroke="#00BFFF" stroke-width="0.8" opacity="0.4"/>
+
+  <circle cx="796" cy="546" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="551" font-size="13" fill="#D8E8F8">5 agents implemented + full UI deployed</text>
+
+  <circle cx="796" cy="578" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="583" font-size="13" fill="#D8E8F8">Audit trails + credibility engine live</text>
+
+  <circle cx="796" cy="608" r="4" fill="#00BFFF" opacity="0.9"/>
+  <text x="808" y="613" font-size="13" fill="#D8E8F8">10/10 core features complete</text>
+
+  <circle cx="796" cy="638" r="4" fill="#FFB000" opacity="0.9"/>
+  <text x="808" y="643" font-size="13" fill="#FFB000">Gaps: tests, deployment docs, benchmarks</text>
+
+  <rect x="784" y="714" width="210" height="24" rx="12" fill="#00BFFF" fill-opacity="0.15" stroke="#00BFFF" stroke-width="1" stroke-opacity="0.5"/>
+  <text x="889" y="730" font-size="11" text-anchor="middle" fill="#00BFFF">⏱ Production-ready, fragile ops</text>
+
+  <!-- ═══ CENTRAL OODA CIRCLE ═══ -->
+
+  <!-- Outer decorative ring -->
+  <circle cx="600" cy="425" r="148" fill="none" stroke="#00BFFF" stroke-width="1" opacity="0.2" stroke-dasharray="4,6"/>
+  <!-- Second ring -->
+  <circle cx="600" cy="425" r="132" fill="none" stroke="#00BFFF" stroke-width="1" opacity="0.3"/>
+  <!-- Main circle background -->
+  <circle cx="600" cy="425" r="118" fill="url(#centerGrad)" stroke="#00BFFF" stroke-width="2.5" filter="url(#glow)"/>
+
+  <!-- Quadrant dividers inside circle -->
+  <line x1="600" y1="307" x2="600" y2="543" stroke="#00BFFF" stroke-width="1" opacity="0.4"/>
+  <line x1="482" y1="425" x2="718" y2="425" stroke="#00BFFF" stroke-width="1" opacity="0.4"/>
+
+  <!-- OBSERVE arc label (top) -->
+  <path id="arcTop" d="M 510 355 A 118 118 0 0 1 690 355" fill="none"/>
+  <text font-size="11" fill="#FFB000" font-weight="bold" letter-spacing="2">
+    <textPath href="#arcTop" startOffset="15%">OBSERVE</textPath>
+  </text>
+
+  <!-- ORIENT arc label (right side) -->
+  <path id="arcRight" d="M 690 355 A 118 118 0 0 1 690 495" fill="none"/>
+  <text font-size="11" fill="#00BFFF" font-weight="bold" letter-spacing="2">
+    <textPath href="#arcRight" startOffset="10%">ORIENT</textPath>
+  </text>
+
+  <!-- ACT arc label (bottom) -->
+  <path id="arcBottom" d="M 690 495 A 118 118 0 0 1 510 495" fill="none"/>
+  <text font-size="11" fill="#00BFFF" font-weight="bold" letter-spacing="2">
+    <textPath href="#arcBottom" startOffset="20%">ACT</textPath>
+  </text>
+
+  <!-- DECIDE arc label (left side) -->
+  <path id="arcLeft" d="M 510 495 A 118 118 0 0 1 510 355" fill="none"/>
+  <text font-size="11" fill="#FFB000" font-weight="bold" letter-spacing="2">
+    <textPath href="#arcLeft" startOffset="10%">DECIDE</textPath>
+  </text>
+
+  <!-- Center text -->
+  <text x="600" y="410" font-size="28" font-weight="bold" text-anchor="middle" fill="#FFB000" letter-spacing="4" filter="url(#textGlow)">OODA</text>
+  <text x="600" y="432" font-size="10" text-anchor="middle" fill="#9AB8D4" letter-spacing="1">LOOP</text>
+  <line x1="550" y1="442" x2="650" y2="442" stroke="#FFB000" stroke-width="0.8" opacity="0.5"/>
+  <text x="600" y="456" font-size="9" text-anchor="middle" fill="#7090A8" letter-spacing="1">FinVeritas</text>
+
+  <!-- ═══ ARROWS (connecting quadrants to center) ═══ -->
+
+  <!-- Observe → center (diagonal arrow top-left) -->
+  <path d="M 430 270 Q 510 330 490 380" fill="none" stroke="#FFB000" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowGold)" opacity="0.7"/>
+
+  <!-- Center → Orient (diagonal top-right) -->
+  <path d="M 710 380 Q 730 320 770 270" fill="none" stroke="#00BFFF" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowCyan)" opacity="0.7"/>
+
+  <!-- Orient → Decide (right to bottom-left) -->
+  <path d="M 770 500 Q 730 535 710 470" fill="none" stroke="#00BFFF" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowCyan)" opacity="0.5"/>
+
+  <!-- Decide → Act (left to right curved) -->
+  <path d="M 490 470 Q 480 540 430 580" fill="none" stroke="#FFB000" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowGold)" opacity="0.5"/>
+
+  <!-- ═══ CONNECTING LINES (quadrant corners to circle) ═══ -->
+  <!-- Top-left corner to circle -->
+  <line x1="430" y1="340" x2="494" y2="383" stroke="#FFB000" stroke-width="1" opacity="0.25" stroke-dasharray="3,5"/>
+  <!-- Top-right corner to circle -->
+  <line x1="770" y1="340" x2="706" y2="383" stroke="#00BFFF" stroke-width="1" opacity="0.25" stroke-dasharray="3,5"/>
+  <!-- Bottom-left corner to circle -->
+  <line x1="430" y1="510" x2="494" y2="467" stroke="#FFB000" stroke-width="1" opacity="0.25" stroke-dasharray="3,5"/>
+  <!-- Bottom-right corner to circle -->
+  <line x1="770" y1="510" x2="706" y2="467" stroke="#00BFFF" stroke-width="1" opacity="0.25" stroke-dasharray="3,5"/>
+
+  <!-- ═══ FOOTER BAR ═══ -->
+  <rect x="0" y="790" width="1200" height="60" fill="#0A1828" opacity="0.95"/>
+  <line x1="0" y1="790" x2="1200" y2="790" stroke="#FFB000" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Footer metrics -->
+  <text x="80" y="816" font-size="12" fill="#9AB8D4" font-style="italic">Cycle Time:</text>
+  <text x="160" y="816" font-size="12" fill="#FFB000" font-weight="bold">⚡ Fast Observe</text>
+  <text x="282" y="816" font-size="12" fill="#555">→</text>
+  <text x="300" y="816" font-size="12" fill="#00BFFF" font-weight="bold">✅ Clear Orient</text>
+  <text x="420" y="816" font-size="12" fill="#555">→</text>
+  <text x="438" y="816" font-size="12" fill="#FFB000" font-weight="bold">🔒 Locked Decide</text>
+  <text x="578" y="816" font-size="12" fill="#555">→</text>
+  <text x="596" y="816" font-size="12" fill="#00BFFF" font-weight="bold">✅ Strong Act</text>
+
+  <!-- FinVeritas branding -->
+  <text x="900" y="810" font-size="16" font-weight="bold" text-anchor="middle" fill="#FFB000" letter-spacing="2" filter="url(#textGlow)">FinVeritas</text>
+  <text x="900" y="828" font-size="10" text-anchor="middle" fill="#5A7A9A" letter-spacing="1">Financial Truth, Quantified</text>
+
+  <!-- Date -->
+  <text x="1150" y="820" font-size="10" text-anchor="end" fill="#3A5068">April 2026</text>
+
+  <!-- Gold bottom border -->
+  <rect x="0" y="845" width="1200" height="5" fill="#FFB000"/>
+</svg>
