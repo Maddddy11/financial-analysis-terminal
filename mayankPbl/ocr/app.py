@@ -501,7 +501,6 @@ def _render_agent_status_badges(payload: dict[str, Any], news_api_key: str) -> N
     missing_mpbf = sorted(required_mpbf - avail)
     missing_bs   = sorted(required_bs  - avail)
 
-    cols = st.columns(6)
     statuses = [
         ("REVENUE",       "revenue" in avail,                         "#FFB000"),
         ("LIQUIDITY",     not missing_liq,                             "#00BFFF"),
@@ -510,6 +509,7 @@ def _render_agent_status_badges(payload: dict[str, Any], news_api_key: str) -> N
         ("SENTIMENT",     bool(news_api_key and news_api_key.strip()), "#CC88FF"),
         ("CROSS REF",     not missing_liq and not missing_bs,          "#00FF88"),
     ]
+    cols = st.columns(len(statuses))
     for col, (name, ready, colour) in zip(cols, statuses):
         c = colour if ready else "#444"
         col.markdown(

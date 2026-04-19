@@ -32,7 +32,7 @@ def _calc_methods(current_assets: float, current_liabilities: float) -> dict[str
     first_limit = max(0.0, first_mpbf)
     second_limit = max(0.0, second_mpbf)
 
-    compliance_status = "COMPLIANT" if second_mpbf > 0 else "NON_COMPLIANT"
+    compliance_status = "COMPLIANT" if second_mpbf > 0 else "NON-COMPLIANT"
 
     return {
         "working_capital_gap": round(wc_gap, 2),
@@ -95,4 +95,3 @@ def run(
         "metrics": metrics,
         "analysis": analysis,
     }
-
