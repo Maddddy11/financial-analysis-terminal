@@ -337,6 +337,7 @@ def inject_theme_vars(font_scale: float = 1.0, light_mode: bool = False) -> None
         .bb-agent-title { color: #B87C24 !important; border-bottom-color: #DFE1E8 !important; }
         .bb-agent-card.liq  .bb-agent-title { color: #1B7A96 !important; }
         .bb-agent-card.bs   .bb-agent-title { color: #A03020 !important; }
+        .bb-agent-card.mpbf .bb-agent-title { color: #B87C24 !important; }
         .bb-agent-card.xref .bb-agent-title { color: #237A50 !important; }
         .bb-metric-row { border-bottom-color: #F0F1F4 !important; }
         .bb-mkey { color: #7A7D96 !important; }
@@ -625,6 +626,54 @@ def render_agent_card(
         )
 
 
+def render_mpbf_card(output: dict[str, Any]) -> None:
+    """Dedicated renderer for MPBF output."""
+    if isinstance(output.get("error"), str):
+        msg = html.escape(output["error"])
+        st.markdown(
+            f'<div class="bb-skip-card"><strong>⚠ MPBF AGENT</strong> — {msg}</div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    metrics = output.get("metrics") or {}
+    method_1 = (metrics.get("first_method") or {}).get("mpbf_limit")
+    method_2 = (metrics.get("second_method") or {}).get("mpbf_limit")
+
+    rows = [
+        ("MPBF LIMIT (METHOD II)", method_2),
+        ("WORKING CAPITAL GAP", metrics.get("working_capital_gap")),
+        ("BORROWER CONTRIBUTION REQUIRED", metrics.get("borrower_contribution_required")),
+        ("MPBF LIMIT (METHOD I)", method_1),
+        ("COMPLIANCE STATUS", metrics.get("compliance_status")),
+    ]
+
+    row_html = ""
+    for k, v in rows:
+        if isinstance(v, float):
+            val = f"{v:,.2f}"
+        else:
+            val = "—" if v is None else str(v)
+        row_html += (
+            f'<div class="bb-metric-row">'
+            f'<span class="bb-mkey">{html.escape(k)}</span>'
+            f'<span class="bb-mval">{html.escape(val)}</span>'
+            f"</div>"
+        )
+
+    st.markdown(
+        f'<div class="bb-agent-card mpbf"><div class="bb-agent-title">◎ MPBF AGENT — TANDON COMPLIANCE</div>{row_html}</div>',
+        unsafe_allow_html=True,
+    )
+
+    analysis = output.get("analysis") or ""
+    if analysis:
+        st.markdown(
+            f'<div class="bb-analysis">{html.escape(analysis).replace("\n", "<br>")}</div>',
+            unsafe_allow_html=True,
+        )
+
+
 def render_cross_ref_card(output: dict[str, Any]) -> None:
     """Dedicated renderer for the Cross Reference Agent (nested metrics, long analysis)."""
     if isinstance(output.get("error"), str):
@@ -644,6 +693,7 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
         "revenue": "#FFB000",
         "liquidity": "#00BFFF",
         "balance_sheet": "#FF6B35",
+        "mpbf": "#D4963A",
         "sentiment": "#CC88FF",
     }
     for key, colour in colours.items():
@@ -655,6 +705,7 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
             "revenue":       ("cagr", "CAGR"),
             "liquidity":     ("liquidity_risk_flag", "LIQUIDITY RISK"),
             "balance_sheet": ("balance_sheet_risk",  "BS RISK"),
+            "mpbf":          ("compliance_status",   "MPBF STATUS"),
             "sentiment":     ("dominant_sentiment",  "PUBLIC SENTIMENT"),
         }.get(key, (None, ""))
         field, label = representative

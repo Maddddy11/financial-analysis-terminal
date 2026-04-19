@@ -379,6 +379,7 @@ h1, h2, h3 {
 }
 .bb-agent-card.liq  { border-left-color: var(--c-cyan);  }
 .bb-agent-card.bs   { border-left-color: var(--c-red);   }
+.bb-agent-card.mpbf { border-left-color: var(--c-accent); }
 .bb-agent-card.xref { border-left-color: var(--c-green); }
 .bb-agent-title {
     font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.22em;
@@ -388,6 +389,7 @@ h1, h2, h3 {
 }
 .bb-agent-card.liq  .bb-agent-title { color: var(--c-cyan);  }
 .bb-agent-card.bs   .bb-agent-title { color: var(--c-red);   }
+.bb-agent-card.mpbf .bb-agent-title { color: var(--c-accent); }
 .bb-agent-card.xref .bb-agent-title { color: var(--c-green); }
 .bb-metric-row {
     display: flex; justify-content: space-between; align-items: center;

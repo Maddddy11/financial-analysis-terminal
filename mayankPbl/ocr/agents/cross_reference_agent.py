@@ -24,6 +24,7 @@ def run(
     revenue: dict[str, Any],
     liquidity: dict[str, Any],
     balance_sheet: dict[str, Any],
+    mpbf: dict[str, Any] | None = None,
     sentiment: dict[str, Any] | None = None,
     base_url: str,
     model: str,
@@ -48,6 +49,9 @@ def run(
         must_include.append("a short liquidity summary")
     if balance_sheet.get("metrics"):
         must_include.append("a short balance sheet/leverage summary")
+    if mpbf and mpbf.get("metrics"):
+        inputs["mpbf_metrics"] = mpbf.get("metrics")
+        must_include.append("a short MPBF compliance summary")
     if sentiment:
         inputs["sentiment_metrics"] = sentiment.get("metrics")
         inputs["sentiment_analysis_snippet"] = (
@@ -107,6 +111,7 @@ def run(
             "revenue": revenue.get("metrics"),
             "liquidity": liquidity.get("metrics"),
             "balance_sheet": balance_sheet.get("metrics"),
+            "mpbf": mpbf.get("metrics") if mpbf else None,
             "sentiment": sentiment.get("metrics") if sentiment else None,
         },
         "analysis": text.strip(),
