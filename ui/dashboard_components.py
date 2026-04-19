@@ -208,6 +208,7 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
         "revenue": "#FFB000",
         "liquidity": "#00BFFF",
         "balance_sheet": "#FF6B35",
+        "mpbf": "#8BC34A",
         "sentiment": "#CC88FF",
     }
     for key, colour in colours.items():
@@ -219,6 +220,7 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
             "revenue":       ("cagr", "CAGR"),
             "liquidity":     ("liquidity_risk_flag", "LIQUIDITY RISK"),
             "balance_sheet": ("balance_sheet_risk",  "BS RISK"),
+            "mpbf":          ("recommended_compliance_status", "MPBF STATUS"),
             "sentiment":     ("dominant_sentiment",  "PUBLIC SENTIMENT"),
         }.get(key, (None, ""))
         field, label = representative
@@ -248,6 +250,44 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
             f'<div class="bb-analysis">{escaped}</div>',
             unsafe_allow_html=True,
         )
+
+
+def render_mpbf_card(output: dict[str, Any]) -> None:
+    """Dedicated renderer for MPBF metrics."""
+    if isinstance(output.get("error"), str):
+        msg = html.escape(output["error"])
+        st.markdown(
+            f'<div class="bb-skip-card"><strong>⚠ MPBF AGENT</strong> — {msg}</div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    metrics = output.get("metrics") or {}
+    second = metrics.get("second_method") or {}
+    rows = [
+        ("MPBF LIMIT", second.get("mpbf_limit", "—")),
+        ("WORKING CAPITAL GAP", second.get("working_capital_gap", "—")),
+        ("BORROWER CONTRIBUTION REQUIRED", second.get("borrower_contribution_required", "—")),
+        ("COMPLIANCE STATUS", second.get("compliance_status", "—")),
+    ]
+    rows_html = ""
+    for key, val in rows:
+        val_str = f"{float(val):,.2f}" if isinstance(val, (int, float)) else str(val)
+        rows_html += (
+            f'<div class="bb-metric-row">'
+            f'<span class="bb-mkey">{html.escape(key)}</span>'
+            f'<span class="bb-mval">{html.escape(val_str)}</span>'
+            f"</div>"
+        )
+
+    st.markdown(
+        f'<div class="bb-agent-card mpbf"><div class="bb-agent-title">◍ MPBF COMPLIANCE (TANDON II)</div>{rows_html}</div>',
+        unsafe_allow_html=True,
+    )
+    analysis = output.get("analysis") or ""
+    if analysis:
+        escaped = html.escape(analysis).replace("\n", "<br>")
+        st.markdown(f'<div class="bb-analysis">{escaped}</div>', unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -4,11 +4,12 @@ This module wraps the existing OCR pipeline in `src/` so the Streamlit app can
 process a single uploaded PDF and get a JSON payload in-memory, while also
 persisting it to `output/`.
 
-For each uploaded PDF three agent-specific JSON files are written in addition
+For each uploaded PDF four agent-specific JSON files are written in addition
 to the full combined output:
   {company}_revenue.json       — Income Statement fields  → Revenue Agent
   {company}_balance_sheet.json — Balance Sheet fields     → Balance Sheet Agent
   {company}_liquidity.json     — Liquidity fields         → Liquidity Agent
+  {company}_mpbf.json          — MPBF fields              → MPBF Agent
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ _REVENUE_FIELDS: frozenset[str] = frozenset({
 
 _BALANCE_SHEET_FIELDS: frozenset[str] = frozenset({
     "total_assets", "total_liabilities", "equity", "total_debt",
+    "current_assets", "current_liabilities",
     "non_current_assets", "non_current_liabilities",
     "cash_and_equivalents", "retained_earnings",
     "short_term_debt", "long_term_debt",
@@ -42,6 +44,10 @@ _BALANCE_SHEET_FIELDS: frozenset[str] = frozenset({
 _LIQUIDITY_FIELDS: frozenset[str] = frozenset({
     "current_assets", "current_liabilities",
     "total_assets", "total_liabilities", "equity",
+})
+
+_MPBF_FIELDS: frozenset[str] = frozenset({
+    "current_assets", "current_liabilities",
 })
 
 
@@ -70,7 +76,7 @@ def parse_pdf_to_json(
 
     Returns:
         (payload_dict, full_json_path, agent_paths)
-        where agent_paths = {"revenue": Path, "balance_sheet": Path, "liquidity": Path}
+        where agent_paths = {"revenue": Path, "balance_sheet": Path, "liquidity": Path, "mpbf": Path}
 
     Raises:
         ValueError: if extraction/parsing yields no usable data from any PDF.
@@ -122,6 +128,7 @@ def parse_pdf_to_json(
             "revenue":       _write(f"{safe}_revenue.json",       _sub_payload(payload, _REVENUE_FIELDS)),
             "balance_sheet": _write(f"{safe}_balance_sheet.json", _sub_payload(payload, _BALANCE_SHEET_FIELDS)),
             "liquidity":     _write(f"{safe}_liquidity.json",     _sub_payload(payload, _LIQUIDITY_FIELDS)),
+            "mpbf":          _write(f"{safe}_mpbf.json",          _sub_payload(payload, _MPBF_FIELDS)),
         }
 
         return payload, full_path, agent_paths

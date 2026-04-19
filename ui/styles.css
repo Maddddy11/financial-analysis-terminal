@@ -338,6 +338,7 @@ h3 { font-size: 13px !important; }
 .bb-agent-card.liq  { border-left-color: #00BFFF; }
 .bb-agent-card.bs   { border-left-color: #FF6B35; }
 .bb-agent-card.xref { border-left-color: #00FF88; }
+.bb-agent-card.mpbf { border-left-color: #8BC34A; }
 
 .bb-agent-title {
     font-size: 10px;
@@ -353,6 +354,7 @@ h3 { font-size: 13px !important; }
 .bb-agent-card.liq  .bb-agent-title { color: #00BFFF; }
 .bb-agent-card.bs   .bb-agent-title { color: #FF6B35; }
 .bb-agent-card.xref .bb-agent-title { color: #00FF88; }
+.bb-agent-card.mpbf .bb-agent-title { color: #8BC34A; }
 
 .bb-metric-row {
     display: flex;
