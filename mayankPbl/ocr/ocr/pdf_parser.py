@@ -9,6 +9,7 @@ to the full combined output:
   {company}_revenue.json       — Income Statement fields  → Revenue Agent
   {company}_balance_sheet.json — Balance Sheet fields     → Balance Sheet Agent
   {company}_liquidity.json     — Liquidity fields         → Liquidity Agent
+  {company}_mpbf.json          — MPBF fields              → MPBF Agent
 """
 
 from __future__ import annotations
@@ -44,6 +45,10 @@ _LIQUIDITY_FIELDS: frozenset[str] = frozenset({
     "total_assets", "total_liabilities", "equity",
 })
 
+_MPBF_FIELDS: frozenset[str] = frozenset({
+    "current_assets", "current_liabilities",
+})
+
 
 def _sub_payload(payload: dict[str, Any], fields: frozenset[str]) -> dict[str, Any]:
     """Return a copy of *payload* with time_series limited to *fields*."""
@@ -70,7 +75,7 @@ def parse_pdf_to_json(
 
     Returns:
         (payload_dict, full_json_path, agent_paths)
-        where agent_paths = {"revenue": Path, "balance_sheet": Path, "liquidity": Path}
+        where agent_paths = {"revenue": Path, "balance_sheet": Path, "liquidity": Path, "mpbf": Path}
 
     Raises:
         ValueError: if extraction/parsing yields no usable data from any PDF.
@@ -122,6 +127,7 @@ def parse_pdf_to_json(
             "revenue":       _write(f"{safe}_revenue.json",       _sub_payload(payload, _REVENUE_FIELDS)),
             "balance_sheet": _write(f"{safe}_balance_sheet.json", _sub_payload(payload, _BALANCE_SHEET_FIELDS)),
             "liquidity":     _write(f"{safe}_liquidity.json",     _sub_payload(payload, _LIQUIDITY_FIELDS)),
+            "mpbf":          _write(f"{safe}_mpbf.json",          _sub_payload(payload, _MPBF_FIELDS)),
         }
 
         return payload, full_path, agent_paths
@@ -169,7 +175,7 @@ def payload_to_agent_files(
         "revenue":       _write(f"{safe}_revenue.json",       _sub_payload(payload, _REVENUE_FIELDS)),
         "balance_sheet": _write(f"{safe}_balance_sheet.json", _sub_payload(payload, _BALANCE_SHEET_FIELDS)),
         "liquidity":     _write(f"{safe}_liquidity.json",     _sub_payload(payload, _LIQUIDITY_FIELDS)),
+        "mpbf":          _write(f"{safe}_mpbf.json",          _sub_payload(payload, _MPBF_FIELDS)),
     }
 
     return payload, full_path, agent_paths
-

@@ -25,6 +25,8 @@ _REQUIRED_FIELDS = [
     "total_liabilities",
     "total_debt",
     "equity",
+    "current_assets",
+    "current_liabilities",
 ]
 
 

@@ -5,7 +5,8 @@ Pages
 1. Upload Financial Statement  — 3 tabs: Bloomberg PDF / Fetch by Ticker / Private Company CSV
 2. Agent Workflow              — interactive pipeline diagram with hover tooltips
 3. Financial Analysis          — full agent output cards
-4. Basel III Alignment         — regulatory context panel
+4. MPBF Compliance             — Tandon Committee working capital limits
+5. Basel III Alignment         — regulatory context panel
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from agents import (
     balance_sheet_agent,
     cross_reference_agent,
     liquidity_agent,
+    mpbf_agent,
     revenue_agent,
     sentiment_agent,
 )
@@ -37,6 +39,7 @@ from ui.dashboard_components import (
     render_cross_ref_card,
     render_hr,
     render_metric_cards,
+    render_mpbf_card,
     render_section_header,
     render_top_bar,
 )
@@ -385,13 +388,16 @@ def _run_agent_pipeline(
     """Run all 5 agents on pre-loaded data and store results in session_state."""
     avail       = _available_fields(payload)
     required_liq = {"current_assets", "current_liabilities", "total_assets", "total_liabilities", "equity"}
+    required_mpbf = {"current_assets", "current_liabilities"}
     required_bs  = {"total_assets", "total_liabilities", "equity"}
     missing_liq  = sorted(required_liq - avail)
+    missing_mpbf = sorted(required_mpbf - avail)
     missing_bs   = sorted(required_bs  - avail)
 
     rev_path = agent_paths["revenue"]
     bs_path  = agent_paths["balance_sheet"]
     liq_path = agent_paths["liquidity"]
+    mpbf_path = agent_paths["mpbf"]
     entity   = str(payload.get("entity", {}).get("entity_id") or "UNKNOWN")
 
     with st.spinner("Revenue Agent…"):
@@ -413,6 +419,13 @@ def _run_agent_pipeline(
             bs_out = _safe_run("Balance Sheet Agent",
                 lambda: balance_sheet_agent.run(json_path=_bs_path, base_url=base_url, model=model, api_key=api_key))
 
+    if missing_mpbf:
+        mpbf_out: dict = {"error": f"MPBF Agent skipped — missing: {', '.join(missing_mpbf)}"}
+    else:
+        with st.spinner("MPBF Agent…"):
+            mpbf_out = _safe_run("MPBF Agent",
+                lambda: mpbf_agent.run(json_path=mpbf_path, base_url=base_url, model=model, api_key=api_key))
+
     _news_key = news_api_key.strip() if news_api_key else ""
     if not _news_key:
         sentiment_out: dict = {"error": "Sentiment Agent skipped — add a NewsAPI key in the sidebar (newsapi.org)."}
@@ -429,7 +442,7 @@ def _run_agent_pipeline(
             )
 
     _sentiment_ok = sentiment_out and not isinstance(sentiment_out.get("error"), str)
-    _valid_outputs = sum(1 for x in [rev_out, liq_out, bs_out, sentiment_out] if x and not isinstance(x.get("error"), str))
+    _valid_outputs = sum(1 for x in [rev_out, liq_out, bs_out, mpbf_out, sentiment_out] if x and not isinstance(x.get("error"), str))
     if _valid_outputs < 3:
         cross_out: dict = {"error": "Cross Reference Agent skipped — requires at least 3 successful agent outputs to run reliably."}
     else:
@@ -439,6 +452,7 @@ def _run_agent_pipeline(
                 "Cross Reference Agent",
                 lambda: cross_reference_agent.run(
                     entity=entity, revenue=_rev, liquidity=_liq, balance_sheet=_bs,
+                    mpbf=mpbf_out if not isinstance(mpbf_out.get("error"), str) else None,
                     sentiment=sentiment_out if _sentiment_ok else None,
                     base_url=base_url, model=model, api_key=api_key,
                 ),
@@ -446,7 +460,7 @@ def _run_agent_pipeline(
 
     st.session_state["agent_outputs"] = {
         "entity": entity, "revenue": rev_out, "liquidity": liq_out,
-        "balance_sheet": bs_out, "sentiment": sentiment_out, "cross_reference": cross_out,
+        "balance_sheet": bs_out, "mpbf": mpbf_out, "sentiment": sentiment_out, "cross_reference": cross_out,
     }
 
     # ── Save to MongoDB file history ──────────────────────────────────────────
@@ -481,18 +495,21 @@ def _run_agent_pipeline(
 def _render_agent_status_badges(payload: dict[str, Any], news_api_key: str) -> None:
     avail       = _available_fields(payload)
     required_liq = {"current_assets", "current_liabilities", "total_assets", "total_liabilities", "equity"}
+    required_mpbf = {"current_assets", "current_liabilities"}
     required_bs  = {"total_assets", "total_liabilities", "equity"}
     missing_liq  = sorted(required_liq - avail)
+    missing_mpbf = sorted(required_mpbf - avail)
     missing_bs   = sorted(required_bs  - avail)
 
-    cols = st.columns(5)
     statuses = [
         ("REVENUE",       "revenue" in avail,                         "#FFB000"),
         ("LIQUIDITY",     not missing_liq,                             "#00BFFF"),
         ("BALANCE SHEET", not missing_bs,                              "#FF6B35"),
+        ("MPBF",          not missing_mpbf,                            "#D4963A"),
         ("SENTIMENT",     bool(news_api_key and news_api_key.strip()), "#CC88FF"),
         ("CROSS REF",     not missing_liq and not missing_bs,          "#00FF88"),
     ]
+    cols = st.columns(len(statuses))
     for col, (name, ready, colour) in zip(cols, statuses):
         c = colour if ready else "#444"
         col.markdown(
@@ -926,13 +943,18 @@ def page_analysis() -> None:
         render_section_header("Balance Sheet Agent", subtitle="Leverage & Asset Growth")
         render_agent_card("Balance Sheet Agent", outputs.get("balance_sheet", {}), css_variant="bs", icon="◇")
     with c4:
-        render_section_header("Sentiment Agent", subtitle="Public Perception from Latest News")
-        render_agent_card("Sentiment Agent", outputs.get("sentiment", {}), css_variant="", icon="◉")
+        render_section_header("MPBF Agent", subtitle="Tandon Committee Working Capital Limits")
+        render_mpbf_card(outputs.get("mpbf", {}))
 
     render_hr()
-    render_section_header("Cross Reference Agent", subtitle="Integrated Explainable Summary — Financial + Sentiment")
 
-    _valid_outputs_count = sum(1 for k in ["revenue", "liquidity", "balance_sheet", "sentiment"]
+    render_section_header("Sentiment Agent", subtitle="Public Perception from Latest News")
+    render_agent_card("Sentiment Agent", outputs.get("sentiment", {}), css_variant="", icon="◉")
+
+    render_hr()
+    render_section_header("Cross Reference Agent", subtitle="Integrated Explainable Summary — Financial + MPBF + Sentiment")
+
+    _valid_outputs_count = sum(1 for k in ["revenue", "liquidity", "balance_sheet", "mpbf", "sentiment"]
                                if outputs.get(k) and not isinstance(outputs[k].get("error"), str))
     if getattr(st.session_state, "_cross_ref_valid_count", None) != _valid_outputs_count:
         st.session_state["_cross_ref_valid_count"] = _valid_outputs_count
@@ -955,7 +977,7 @@ def page_analysis() -> None:
     render_section_header("Raw Agent Outputs", subtitle="Full JSON — audit trail")
     for label, key in [
         ("Revenue Agent", "revenue"), ("Liquidity Agent", "liquidity"),
-        ("Balance Sheet Agent", "balance_sheet"), ("Sentiment Agent", "sentiment"),
+        ("Balance Sheet Agent", "balance_sheet"), ("MPBF Agent", "mpbf"), ("Sentiment Agent", "sentiment"),
         ("Cross Reference Agent", "cross_reference"),
     ]:
         with st.expander(f"{label}"):
@@ -963,6 +985,27 @@ def page_analysis() -> None:
 
 
 # ── Page 4 ────────────────────────────────────────────────────────────────────
+
+def page_mpbf() -> None:
+    render_section_header("MPBF Compliance", subtitle="Maximum Permissible Bank Finance — Tandon Committee")
+
+    outputs = st.session_state.get("agent_outputs")
+    if not outputs:
+        if not st.session_state.get("ocr_cache"):
+            st.warning("⚠️ Please ingest data first by using the **Upload Statement** page.")
+        else:
+            st.warning("⚠️ Data loaded, but no financial analysis done yet. Please click **RUN FULL ANALYSIS** on the Upload page.")
+        return
+
+    mpbf_out = outputs.get("mpbf", {})
+    render_mpbf_card(mpbf_out)
+
+    if not isinstance(mpbf_out.get("error"), str):
+        st.markdown("### Detailed Tandon Method Breakdown")
+        st.json(mpbf_out)
+
+
+# ── Page 5 ────────────────────────────────────────────────────────────────────
 
 def page_basel() -> None:
     render_section_header("Basel III Risk Governance Alignment", subtitle="How this system supports regulatory frameworks")
@@ -1113,6 +1156,7 @@ def main() -> None:
             "Upload Statement",
             "Financial Analysis",
             "Agent Workflow",
+            "MPBF Compliance",
             "Basel III Alignment",
             "My File History",
         ]
@@ -1174,6 +1218,8 @@ def main() -> None:
         page_workflow()
     elif "Analysis" in page:
         page_analysis()
+    elif "MPBF" in page:
+        page_mpbf()
     elif "Basel" in page:
         page_basel()
     elif "History" in page:
