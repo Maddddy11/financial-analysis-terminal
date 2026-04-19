@@ -54,6 +54,19 @@ def _method_second(current_assets: float, current_liabilities: float) -> dict[st
 
 
 def run_mpbf_agent(json_path: str | Path) -> dict[str, Any]:
+    """Run deterministic MPBF computation from OCR output JSON.
+
+    Args:
+        json_path: Path to a JSON payload containing time_series with
+            current_assets and current_liabilities.
+
+    Returns:
+        Dict containing entity, computed MPBF metrics (First/Second methods),
+        and explanatory narrative.
+
+    Raises:
+        ValueError: If required fields are missing or negative.
+    """
     path = Path(json_path)
     payload = json.loads(path.read_text(encoding="utf-8"))
     ts = payload.get("time_series") or {}

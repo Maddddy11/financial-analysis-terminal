@@ -253,7 +253,14 @@ def render_cross_ref_card(output: dict[str, Any]) -> None:
 
 
 def render_mpbf_card(output: dict[str, Any]) -> None:
-    """Dedicated renderer for MPBF metrics."""
+    """Render MPBF output with key Tandon-II compliance metrics.
+
+    Expects an agent-style dict with:
+      - error (optional string), or
+      - metrics.second_method.{mpbf_limit, working_capital_gap,
+        borrower_contribution_required, compliance_status}
+      - analysis (optional string narrative)
+    """
     if isinstance(output.get("error"), str):
         msg = html.escape(output["error"])
         st.markdown(

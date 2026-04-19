@@ -33,6 +33,8 @@ def run(
     """Generate a cross-referenced explanation using only agent metrics.
 
     Args:
+        mpbf: Optional for backward compatibility; when provided MPBF metrics
+              are incorporated in the integrated narrative.
         sentiment: Optional output from the Sentiment Agent. When provided,
                    public-perception context is included in the LLM prompt.
     """
