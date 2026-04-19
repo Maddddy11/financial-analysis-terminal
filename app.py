@@ -5,7 +5,8 @@ Pages
 1. Upload Financial Statement  — multi-PDF upload, OCR, metric cards, run agents
 2. Agent Workflow              — interactive pipeline diagram with hover tooltips
 3. Financial Analysis          — full agent output cards
-4. Basel III Alignment         — regulatory context panel
+4. MPBF Compliance             — Tandon Committee working capital limits
+5. Basel III Alignment         — regulatory context panel
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ from agents import (
     balance_sheet_agent,
     cross_reference_agent,
     liquidity_agent,
+    mpbf_agent,
     revenue_agent,
     sentiment_agent,
 )
@@ -31,6 +33,7 @@ from ui.dashboard_components import (
     render_cross_ref_card,
     render_hr,
     render_metric_cards,
+    render_mpbf_card,
     render_section_header,
     render_top_bar,
 )
@@ -127,16 +130,19 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
     avail = _available_fields(payload)
     required_liq = {"current_assets", "current_liabilities", "total_assets", "total_liabilities", "equity"}
     required_bs  = {"total_assets", "total_liabilities", "equity"}
+    required_mpbf = {"current_assets", "current_liabilities"}
     missing_liq  = sorted(required_liq - avail)
     missing_bs   = sorted(required_bs  - avail)
+    missing_mpbf = sorted(required_mpbf - avail)
 
-    cols = st.columns(5)
+    cols = st.columns(6)
     statuses = [
         ("REVENUE",       "revenue" in avail,                      "#FFB000"),
         ("LIQUIDITY",     not missing_liq,                          "#00BFFF"),
         ("BALANCE SHEET", not missing_bs,                           "#FF6B35"),
+        ("MPBF",          not missing_mpbf,                         "#8BC34A"),
         ("SENTIMENT",     bool(news_api_key and news_api_key.strip()), "#CC88FF"),
-        ("CROSS REF",     not missing_liq and not missing_bs,       "#00FF88"),
+        ("CROSS REF",     not missing_liq and not missing_bs and not missing_mpbf, "#00FF88"),
     ]
     for col, (name, ready, colour) in zip(cols, statuses):
         c = colour if ready else "#444"
@@ -153,6 +159,7 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
         rev_path = agent_paths["revenue"]
         bs_path  = agent_paths["balance_sheet"]
         liq_path = agent_paths["liquidity"]
+        mpbf_path = agent_paths["mpbf"]
         entity = str(payload.get("entity", {}).get("entity_id") or "UNKNOWN")
 
         with st.spinner("Revenue Agent…"):
@@ -171,6 +178,12 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
             with st.spinner("Balance Sheet Agent…"):
                 bs_out = _safe_run("Balance Sheet Agent",
                     lambda: balance_sheet_agent.run(json_path=bs_path, base_url=base_url, model=model, api_key=api_key))
+
+        mpbf_out = ({"error": f"MPBF Agent skipped — missing: {', '.join(missing_mpbf)}"} if missing_mpbf else None)
+        if not missing_mpbf:
+            with st.spinner("MPBF Agent…"):
+                mpbf_out = _safe_run("MPBF Agent",
+                    lambda: mpbf_agent.run(json_path=mpbf_path, base_url=base_url, model=model, api_key=api_key))
 
         # Sentiment Agent — optional; skipped gracefully if no NewsAPI key provided
         _news_key = news_api_key.strip() if news_api_key else ""
@@ -193,9 +206,9 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
 
         # Pass sentiment to cross-reference only if it succeeded
         _sentiment_ok = sentiment_out and not isinstance(sentiment_out.get("error"), str)
-        any_err = any(isinstance(x.get("error"), str) for x in [rev_out, liq_out, bs_out])
+        any_err = any(isinstance(x.get("error"), str) for x in [rev_out, liq_out, bs_out, mpbf_out])
         if any_err:
-            cross_out = {"error": "Cross Reference Agent skipped — requires Revenue, Liquidity, and Balance Sheet agents to succeed."}
+            cross_out = {"error": "Cross Reference Agent skipped — requires Revenue, Liquidity, Balance Sheet, and MPBF agents to succeed."}
         else:
             with st.spinner("Cross Reference Agent…"):
                 cross_out = _safe_run(
@@ -205,6 +218,7 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
                         revenue=rev_out,
                         liquidity=liq_out,
                         balance_sheet=bs_out,
+                        mpbf=mpbf_out,
                         sentiment=sentiment_out if _sentiment_ok else None,
                         base_url=base_url,
                         model=model,
@@ -214,7 +228,7 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
 
         st.session_state["agent_outputs"] = {
             "entity": entity, "revenue": rev_out, "liquidity": liq_out,
-            "balance_sheet": bs_out, "sentiment": sentiment_out, "cross_reference": cross_out,
+            "balance_sheet": bs_out, "mpbf": mpbf_out, "sentiment": sentiment_out, "cross_reference": cross_out,
         }
         st.success("Analysis complete — navigate to Financial Analysis to view results.")
 
@@ -225,6 +239,7 @@ def page_upload(base_url: str, model: str, api_key: str, news_api_key: str = "")
             ("Revenue Agent", "revenue", ""),
             ("Liquidity Agent", "liquidity", "liq"),
             ("Balance Sheet Agent", "balance_sheet", "bs"),
+            ("MPBF Agent", "mpbf", "mpbf"),
             ("Sentiment Agent", "sentiment", ""),
             ("Cross Reference Agent", "cross_reference", "xref"),
         ]:
@@ -245,6 +260,7 @@ def page_workflow() -> None:
             <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#3B2800"></span>Revenue Agent</div>
             <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#003040"></span>Liquidity Agent</div>
             <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#3B1800"></span>Balance Sheet Agent</div>
+            <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#2A3A00"></span>MPBF Agent</div>
             <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#2A0040"></span>Sentiment Agent</div>
             <div class="bb-legend-item"><span class="bb-legend-dot" style="background:#002010"></span>Cross Reference</div>
         </div>""", unsafe_allow_html=True)
@@ -256,6 +272,7 @@ def page_workflow() -> None:
         Node(id="rev",   label="Revenue\nAgent",         color="#3B2800", shape="ellipse", size=22, font={"color":"#FFB000","size":12}, title=agent_tooltip_html("Revenue Agent",       outputs.get("revenue"))),
         Node(id="liq",   label="Liquidity\nAgent",       color="#003040", shape="ellipse", size=22, font={"color":"#00BFFF","size":12}, title=agent_tooltip_html("Liquidity Agent",     outputs.get("liquidity"))),
         Node(id="bs",    label="Balance Sheet\nAgent",   color="#3B1800", shape="ellipse", size=22, font={"color":"#FF6B35","size":12}, title=agent_tooltip_html("Balance Sheet Agent", outputs.get("balance_sheet"))),
+        Node(id="mpbf",  label="MPBF\nAgent",            color="#2A3A00", shape="ellipse", size=22, font={"color":"#8BC34A","size":12}, title=agent_tooltip_html("MPBF Agent", outputs.get("mpbf"))),
         Node(id="sent",  label="Sentiment\nAgent",       color="#2A0040", shape="ellipse", size=22, font={"color":"#CC88FF","size":12}, title=agent_tooltip_html("Sentiment Agent",     outputs.get("sentiment"))),
         Node(id="cross", label="Cross\nReference\nAgent",color="#002010", shape="box",     size=24, font={"color":"#00FF88","size":12}, title=agent_tooltip_html("Cross Reference Agent",outputs.get("cross_reference"))),
         Node(id="out",   label="Explainable\nOutput",    color="#1A1A2E", shape="box",     size=20, font={"color":"#E6E6E6","size":12}, title="Final explainable financial analysis report"),
@@ -266,9 +283,11 @@ def page_workflow() -> None:
         Edge(source="ocr",   target="rev",   color="#FFB000", width=1),
         Edge(source="ocr",   target="liq",   color="#00BFFF", width=1),
         Edge(source="ocr",   target="bs",    color="#FF6B35", width=1),
+        Edge(source="ocr",   target="mpbf",  color="#8BC34A", width=1),
         Edge(source="rev",   target="cross", color="#FFB000", width=1, dashes=True),
         Edge(source="liq",   target="cross", color="#00BFFF", width=1, dashes=True),
         Edge(source="bs",    target="cross", color="#FF6B35", width=1, dashes=True),
+        Edge(source="mpbf",  target="cross", color="#8BC34A", width=1, dashes=True),
         Edge(source="sent",  target="cross", color="#CC88FF", width=1, dashes=True),
         Edge(source="cross", target="out",   color="#00FF88", width=2),
     ]
@@ -283,6 +302,7 @@ def page_workflow() -> None:
         with c1:
             render_agent_card("Revenue Agent",       outputs.get("revenue", {}),       css_variant="")
             render_agent_card("Balance Sheet Agent", outputs.get("balance_sheet", {}), css_variant="bs")
+            render_mpbf_card(outputs.get("mpbf", {}))
             render_agent_card("Sentiment Agent",     outputs.get("sentiment", {}),     css_variant="")
         with c2:
             render_agent_card("Liquidity Agent",     outputs.get("liquidity", {}),     css_variant="liq")
@@ -319,18 +339,22 @@ def page_analysis() -> None:
         render_section_header("Balance Sheet Agent", subtitle="Leverage & Asset Growth")
         render_agent_card("Balance Sheet Agent", outputs.get("balance_sheet", {}), css_variant="bs", icon="◇")
     with c4:
-        render_section_header("Sentiment Agent", subtitle="Public Perception from Latest News")
-        render_agent_card("Sentiment Agent", outputs.get("sentiment", {}), css_variant="", icon="◉")
+        render_section_header("MPBF Agent", subtitle="Tandon Committee Working Capital Limits")
+        render_mpbf_card(outputs.get("mpbf", {}))
 
     render_hr()
-    render_section_header("Cross Reference Agent", subtitle="Integrated Explainable Summary — Financial + Sentiment")
+    render_section_header("Sentiment Agent", subtitle="Public Perception from Latest News")
+    render_agent_card("Sentiment Agent", outputs.get("sentiment", {}), css_variant="", icon="◉")
+
+    render_hr()
+    render_section_header("Cross Reference Agent", subtitle="Integrated Explainable Summary — Financial + MPBF + Sentiment")
     render_cross_ref_card(outputs.get("cross_reference", {}))
 
     render_hr()
     render_section_header("Raw Agent Outputs", subtitle="Full JSON — audit trail")
     for label, key in [
         ("Revenue Agent", "revenue"), ("Liquidity Agent", "liquidity"),
-        ("Balance Sheet Agent", "balance_sheet"), ("Sentiment Agent", "sentiment"),
+        ("Balance Sheet Agent", "balance_sheet"), ("MPBF Agent", "mpbf"), ("Sentiment Agent", "sentiment"),
         ("Cross Reference Agent", "cross_reference"),
     ]:
         with st.expander(f"{label}"):
@@ -338,6 +362,47 @@ def page_analysis() -> None:
 
 
 # ── Page 4 ────────────────────────────────────────────────────────────────────
+
+def page_mpbf() -> None:
+    render_section_header("MPBF Compliance", subtitle="Maximum Permissible Bank Finance — Tandon Committee")
+
+    outputs = st.session_state.get("agent_outputs")
+    if not outputs:
+        st.markdown('<div style="color:#444;font-size:12px;">▸ No analysis data yet. Upload PDFs and run the pipeline first.</div>', unsafe_allow_html=True)
+        return
+
+    mpbf_out = outputs.get("mpbf") or {}
+    if isinstance(mpbf_out.get("error"), str):
+        render_mpbf_card(mpbf_out)
+        return
+
+    metrics = mpbf_out.get("metrics") or {}
+    second = metrics.get("second_method") or {}
+    first = metrics.get("first_method") or {}
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("MPBF LIMIT (TANDON II)", f"{float(second.get('mpbf_limit', 0.0)):,.2f}")
+    c2.metric("WORKING CAPITAL GAP", f"{float(second.get('working_capital_gap', 0.0)):,.2f}")
+    c3.metric("BORROWER CONTRIBUTION", f"{float(second.get('borrower_contribution_required', 0.0)):,.2f}")
+
+    render_hr()
+    render_mpbf_card(mpbf_out)
+
+    render_hr()
+    render_section_header("Detailed Method Comparison", subtitle="First and Second Tandon methods")
+    st.json(
+        {
+            "current_assets": metrics.get("current_assets"),
+            "current_liabilities": metrics.get("current_liabilities"),
+            "first_method": first,
+            "second_method": second,
+            "recommended_method": metrics.get("recommended_method"),
+            "recommended_compliance_status": metrics.get("recommended_compliance_status"),
+        }
+    )
+
+
+# ── Page 5 ────────────────────────────────────────────────────────────────────
 
 def page_basel() -> None:
     render_section_header("Basel III Risk Governance Alignment", subtitle="How this system supports regulatory frameworks")
@@ -423,7 +488,7 @@ def main() -> None:
 
         st.markdown('<div class="bb-nav-label">Navigation</div>', unsafe_allow_html=True)
         page = st.radio("",
-            ["Upload Statement", "Agent Workflow", "Financial Analysis", "Basel III Alignment"],
+            ["Upload Statement", "Agent Workflow", "Financial Analysis", "MPBF Compliance", "Basel III Alignment"],
             label_visibility="collapsed")
 
         render_hr()
@@ -454,6 +519,8 @@ def main() -> None:
         page_workflow()
     elif "Analysis" in page:
         page_analysis()
+    elif "MPBF" in page:
+        page_mpbf()
     elif "Basel" in page:
         page_basel()
 
